@@ -1,0 +1,24 @@
+{
+  "name": "express-rest-filter",
+  "version": "0.1.0",
+  "description": "Express middleware for parsing GET requests with filtering",
+  "main": "index.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/calibr/express-rest-fitler.git"
+  },
+  "keywords": [
+    "express",
+    "rest",
+    "filter"
+  ],
+  "author": "calibr <awcalibr@gmail.com>",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/calibr/express-rest-fitler/issues"
+  },
+  "homepage": "https://github.com/calibr/express-rest-fitler"
+}
