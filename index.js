@@ -43,7 +43,7 @@ module.exports = function(req, res, next) {
     }
     var value = query[valueKey];
     filterObject[field] = {};
-    if(res.api.guid._options.keys[field]) {
+    if(res.api.guid && res.api.guid._options.keys[field]) {
       // need to isolate filter field value
       value = res.api.guid.isolate(value);
     }
