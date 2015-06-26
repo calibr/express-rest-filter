@@ -4,7 +4,8 @@ var allowedTypes = {
   "gt": true,
   "gte": true,
   "lt": true,
-  "lte": true
+  "lte": true,
+  "in": true
 };
 
 function err(res, code, message) {
@@ -43,10 +44,6 @@ module.exports = function(req, res, next) {
     }
     var value = query[valueKey];
     filterObject[field] = {};
-    if(res.api.guid && res.api.guid._options.keys[field]) {
-      // need to isolate filter field value
-      value = res.api.guid.isolate(value);
-    }
     if(type === "eq") {
       filterObject[field] = value;
     }
