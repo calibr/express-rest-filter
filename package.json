@@ -1,6 +1,6 @@
 {
   "name": "express-rest-filter",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "Express middleware for parsing GET requests with filtering",
   "main": "index.js",
   "scripts": {

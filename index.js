@@ -5,7 +5,8 @@ var allowedTypes = {
   "gte": true,
   "lt": true,
   "lte": true,
-  "in": true
+  "in": true,
+  "range": true
 };
 
 function err(res, code, message) {
@@ -46,6 +47,12 @@ module.exports = function(req, res, next) {
     filterObject[field] = {};
     if(type === "eq") {
       filterObject[field] = value;
+    }
+    else if(type === "range") {
+      filterObject[field] = {
+        gt: value[0],
+        lt: value[1]
+      };
     }
     else {
       filterObject[field][type] = value;
