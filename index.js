@@ -14,50 +14,84 @@ function err(res, code, message) {
   res.send(message);
 }
 
-module.exports = function(req, res, next) {
-  if(req.method !== "GET") {
-    return next();
+function parseValue(valueString) {
+  if (valueString.length > 2 && valueString[0] == '"' && valueString[valueString.length-1] == '"') {
+    if (valueString.length > 3) {
+      return valueStriing.substring(1, valueStriing.length - 2);
+    } else {
+      return ""
+    }
+  } else if (valueString.length > 2 && valueString[0] == '[' && valueString[valueString.length-1] == ']') {
+    if (valueString.length > 3) {
+      var arrayContentString = valueString.substring(1, valueString.length - 2);
+      var arrayContentStringArray = arrayContentString.split(',');
+      var resultArray = [];
+      for (var i = 0; i < arrayContentStringArray; i++) {
+        order.push(parseValue(arrayContentStringArray));
+      }
+      return resultArray;
+    } else {
+      return []
+    }
+  } else {
+    return parseInt(valueString)
   }
-  var query = req.query;
-  if(!query) {
-    return next();
+}
+
+module.exports =function(req, res, next) {
+  if (!req.swagger) return next();
+
+  try {
+    if (req.swagger.params.order) {
+      var orderString = req.swagger.params.order.value;
+      var orderArray = orderString.split(';');
+      var order = [];
+      for (var i = 0; i < orderArray; i++) {
+        var orderItemArray = orderArray[i].split(' ');
+        order.push([orderItemArray[0], (orderItemArray.length > 1) ? orderItemArray[1] : 'asc']);
+      }
+      req.api.order = order;
+    }
+
+    if (req.swagger.params.range) {
+      var rangeString = req.swagger.params.range.value;
+      var rangeArray = rangeString.split(' ');
+      req.api.range.limit = parseInt(rangeArray[0]);
+      req.api.range.offset = (rangeArray.length > 1) ? rangeArray[1] : 0;
+    }
+
+    if (req.swagger.params.filter) {
+      var filterString = req.swagger.params.filter.value;
+      var filterArray = filterString.split(';');
+      var filter = {};
+      for (var i = 0; i < filterArray; i++) {
+        var filterItemArray = filterArray[i].split(' ');
+        if (filterItemArray.length < 3) {
+          return err(res, 400, "filter " + filterString + "error");
+        }
+
+        var filterItemField = filterItemArray[0];
+        var filterItemType = filterItemArray[1];
+        var filterItemValue = filterItemArray[2];
+
+        if (!allowedTypes[filterItemType]) {
+          return err(res, 400, "filter type " + filterItemType + " is not allowed");
+        }
+
+        var filterItemParsedValue;
+
+        filterItemParsedValue = parseValue(filterItemValue);
+
+        var filterItem = {};
+        filterItem[filterItemType] = filterItemParsedValue;
+
+        filter[filterItemField] = filterItem
+      }
+      req.api.filter = filter;
+    }
+  } catch (err) {
+    return err(res, 400, "Internal Error");
   }
-  if(!query.filterFields) {
-    return next();
-  }
-  var fields = query.filterFields;
-  if(!(fields instanceof Array)) {
-    fields = [fields];
-  }
-  var filterObject = {};
-  for(var i = 0; i != fields.length; i++) {
-    var field = fields[i];
-    var type = query["filterType_" + field];
-    if(!type) {
-      return err(res, 400, "filterType_" + field + " should be specified");
-    }
-    if(!allowedTypes[type]) {
-      return err(res, 400, "filter type " + type + " is not allowed");
-    }
-    var valueKey = "filterValue_" + field;
-    if(!(valueKey in query)) {
-      return err(res, 400, valueKey + " should be specified");
-    }
-    var value = query[valueKey];
-    filterObject[field] = {};
-    if(type === "eq") {
-      filterObject[field] = value;
-    }
-    else if(type === "range") {
-      filterObject[field] = {
-        gt: value[0],
-        lt: value[1]
-      };
-    }
-    else {
-      filterObject[field][type] = value;
-    }
-  }
-  req.api.filter = filterObject;
+
   next();
 };
